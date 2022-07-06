@@ -1,0 +1,13 @@
+[package]
+name = "encrypt_dir"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+walkdir = "2.3.2"
+aes-stream = "0.2.1"
+rust-crypto = "0.2.36"
+hex-literal = "0.3.4"
+regex = "1.5.6"
