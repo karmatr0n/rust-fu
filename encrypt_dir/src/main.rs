@@ -2,9 +2,9 @@ extern crate aesstream;
 extern crate crypto;
 
 use aesstream::AesWriter;
-use crypto::aessafe::AesSafe128Encryptor;
-use hex_literal::hex;
+use crypto::aessafe::AesSafe256Encryptor;
 use regex::Regex;
+use std::env;
 use std::fs;
 use std::fs::File;
 use std::io::{Read, Write};
@@ -17,8 +17,17 @@ fn is_dir_or_encrypted(entry: &DirEntry) -> bool {
 }
 
 fn main() {
-    let password: [u8; 16] = hex!("DEADBEEFDEADBEEFDEADBEEFDEADBEEF");
-    let src_dir = "/var/tmp/test";
+    let args: Vec<String> = env::args().collect();
+    if args.len() < 2 {
+        panic!("Usage: encrypt_dir <PASSWORD> <DIRECTORY>");
+    }
+
+    let text = String::from(&args[1]);
+    let digest = md5::compute(text);
+    let md5 = format!("{:x}", digest);
+    let password: [u8; 32] = md5.as_bytes().try_into().unwrap();
+
+    let src_dir = &args[2];
 
     for entry in WalkDir::new(src_dir)
         .into_iter()
@@ -55,7 +64,7 @@ fn main() {
 
         let mut enc = Vec::new();
         {
-            let encryptor = AesSafe128Encryptor::new(&password);
+            let encryptor = AesSafe256Encryptor::new(&password);
             let mut writer = match AesWriter::new(&mut enc, encryptor) {
                 Err(why) => {
                     println!("couldn't encrypt {}: {}", path_display, why);
