@@ -4,6 +4,8 @@ extern crate crypto;
 use aesstream::AesWriter;
 use crypto::aessafe::AesSafe256Encryptor;
 use regex::Regex;
+use sha::sha256::Sha256;
+use sha::utils::{Digest, DigestExt};
 use std::env;
 use std::fs;
 use std::fs::File;
@@ -23,10 +25,11 @@ fn main() {
     }
 
     let text = String::from(&args[1]);
-    let digest = md5::compute(text);
-    let md5 = format!("{:x}", digest);
-    let password: [u8; 32] = md5.as_bytes().try_into().unwrap();
-
+    let password: [u8; 32] = Sha256::default()
+        .digest(text.as_bytes())
+        .to_bytes()
+        .try_into()
+        .unwrap();
     let src_dir = &args[2];
 
     for entry in WalkDir::new(src_dir)
